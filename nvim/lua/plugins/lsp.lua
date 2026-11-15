@@ -1,0 +1,147 @@
+return {
+  {
+    "neovim/nvim-lspconfig",
+    event = { "BufReadPre", "BufNewFile" },
+    dependencies = {
+      "williamboman/mason.nvim",
+      "williamboman/mason-lspconfig.nvim",
+      "hrsh7th/cmp-nvim-lsp",
+    },
+    config = function()
+      -- Setup Mason
+      require("mason").setup({
+        ui = {
+          border = "rounded",
+          icons = {
+            package_installed = "✓",
+            package_pending = "➜",
+            package_uninstalled = "✗",
+          },
+        },
+      })
+
+      local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+      -- Global LSP keymaps using the modern LspAttach autocmd
+      vim.api.nvim_create_autocmd("LspAttach", {
+        group = vim.api.nvim_create_augroup("UserLspConfig", { clear = true }),
+        callback = function(ev)
+          local map = function(mode, keys, func, desc)
+            vim.keymap.set(mode, keys, func, { buffer = ev.buf, desc = desc })
+          end
+
+          local telescope = function(builtin_func, opts)
+            return function()
+              require("telescope.builtin")[builtin_func](opts or {})
+            end
+          end
+
+          -- Navigation via Telescope pickers
+          map("n", "gd", telescope("lsp_definitions"), "LSP: Definitions (Telescope)")
+          map("n", "gD", vim.lsp.buf.declaration, "LSP: Go to Declaration")
+          map("n", "gr", telescope("lsp_references"), "LSP: References (Telescope)")
+          map("n", "gi", telescope("lsp_implementations"), "LSP: Implementations (Telescope)")
+          map("n", "<leader>lt", telescope("lsp_type_definitions"), "LSP: Type Definitions")
+
+          -- Symbol Pickers (Functions, Variables, Types, Classes)
+          map("n", "<leader>ls", telescope("lsp_document_symbols"), "LSP: Buffer Symbols (vars/functions)")
+          map("n", "<leader>lS", telescope("lsp_dynamic_workspace_symbols"), "LSP: Workspace Symbols")
+
+          -- Diagnostics
+          map("n", "<leader>ld", telescope("diagnostics", { bufnr = 0 }), "LSP: Document Diagnostics")
+          map("n", "<leader>lD", telescope("diagnostics"), "LSP: Project Diagnostics")
+          map("n", "[d", vim.diagnostic.goto_prev, "Previous Diagnostic")
+          map("n", "]d", vim.diagnostic.goto_next, "Next Diagnostic")
+
+          -- Hover, Rename, Code Actions & Formatting
+          map("n", "K", vim.lsp.buf.hover, "LSP: Hover Documentation")
+          map("n", "<leader>lr", vim.lsp.buf.rename, "LSP: Rename Symbol")
+          map("n", "<leader>ca", vim.lsp.buf.code_action, "Code Action (Telescope)")
+          map("n", "<leader>lf", function()
+            vim.lsp.buf.format({ async = true })
+          end, "Format Document")
+          map("n", "<leader>lh", function()
+            local current = vim.lsp.inlay_hint.is_enabled({ bufnr = ev.buf })
+            vim.lsp.inlay_hint.enable(not current, { bufnr = ev.buf })
+          end, "Toggle Inlay Hints")
+
+          -- JS / TS Specific Code Actions
+          map("n", "<leader>co", function()
+            vim.lsp.buf.code_action({
+              context = { only = { "source.organizeImports.ts", "source.organizeImports" }, diagnostics = {} },
+              apply = true,
+            })
+          end, "Organize Imports")
+          map("n", "<leader>ci", function()
+            vim.lsp.buf.code_action({
+              context = { only = { "source.addMissingImports.ts" }, diagnostics = {} },
+              apply = true,
+            })
+          end, "Add Missing Imports")
+          map("n", "<leader>cu", function()
+            vim.lsp.buf.code_action({
+              context = { only = { "source.removeUnusedImports.ts", "source.removeUnused.ts" }, diagnostics = {} },
+              apply = true,
+            })
+          end, "Remove Unused Imports")
+          map("n", "<leader>cf", function()
+            vim.lsp.buf.code_action({
+              context = { only = { "source.fixAll.ts" }, diagnostics = {} },
+              apply = true,
+            })
+          end, "Fix All TypeScript Issues")
+        end,
+      })
+
+      -- List of language servers to install
+      local servers = {
+        "gopls",        -- Go
+        "ts_ls",        -- JavaScript, TypeScript, React JSX/TSX
+        "tailwindcss",  -- Tailwind CSS
+        "pyright",      -- Python
+        "html",         -- HTML
+        "cssls",        -- CSS
+      }
+
+      -- Setup mason-lspconfig with automatic installation
+      require("mason-lspconfig").setup({
+        ensure_installed = servers,
+        automatic_installation = true,
+      })
+
+      -- Native Neovim 0.12 LSP configuration (no deprecated wrappers)
+      vim.lsp.config("*", {
+        capabilities = capabilities,
+      })
+
+      vim.lsp.config("ts_ls", {
+        filetypes = {
+          "javascript",
+          "javascriptreact",
+          "javascript.jsx",
+          "typescript",
+          "typescriptreact",
+          "typescript.tsx",
+        },
+      })
+
+      -- Enable all configured language servers
+      vim.lsp.enable(servers)
+
+      -- Clean rounded borders for floating windows & diagnostics
+      vim.diagnostic.config({
+        virtual_text = {
+          prefix = "●",
+        },
+        signs = true,
+        underline = true,
+        update_in_insert = false,
+        severity_sort = true,
+        float = {
+          border = "rounded",
+          source = "always",
+        },
+      })
+    end,
+  },
+}
