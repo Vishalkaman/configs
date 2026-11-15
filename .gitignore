@@ -1,0 +1,38 @@
+# Ignore everything by default
+/*
+
+# Track this .gitignore
+!.gitignore
+
+# Track only specified application configurations
+!/kitty/
+!/nvim/
+!/tmux/
+!/zsh/
+
+# ------------------------------------------------------------------------------
+# App-specific ignore rules
+# ------------------------------------------------------------------------------
+
+# Zsh: Ignore plugins, completion dumps, and shell history
+zsh/plugins/
+zsh/.zcompdump*
+zsh/.zsh_history
+
+# Neovim: Ignore temporary, swap, backup, and state files
+nvim/**/.DS_Store
+nvim/**/*.sw[klmnop]
+nvim/**/*.swp
+nvim/**/*.swo
+nvim/**/*~
+nvim/**/*.bak
+nvim/**/*.un~
+nvim/.repro/
+
+# Tmux: Ignore any local/temporary tmux artifacts
+tmux/*.local
+tmux/*.tmp
+
+# General OS / editor metadata
+**/.DS_Store
+*.tmp
