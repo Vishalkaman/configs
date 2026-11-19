@@ -66,3 +66,12 @@ vim.api.nvim_create_autocmd("TextYankPost", {
     vim.highlight.on_yank({ higroup = "IncSearch", timeout = 150 })
   end,
 })
+
+-- Prevent multiline HTML <a> tags in JSX/TSX from underlining leading whitespace
+vim.api.nvim_create_autocmd({ "FileType", "ColorScheme" }, {
+  group = vim.api.nvim_create_augroup("NoHtmlLinkUnderline", { clear = true }),
+  pattern = "*",
+  callback = function()
+    vim.api.nvim_set_hl(0, "htmlLink", { underline = false })
+  end,
+})

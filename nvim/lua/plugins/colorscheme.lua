@@ -47,6 +47,11 @@ return {
           -- Search and match
           Search = { fg = "#1F1F28", bg = "#FFA066" },
           CurSearch = { fg = "#1F1F28", bg = "#E58B58" },
+
+          -- Disable underline on HTML/JSX links to prevent weird lines through indent whitespace
+          htmlLink = { underline = false },
+          ["@markup.link"] = { underline = false },
+          ["@markup.link.url"] = { underline = false },
         }
       end,
     },

@@ -8,6 +8,9 @@ return {
       "hrsh7th/cmp-nvim-lsp",
     },
     config = function()
+      -- Load lspconfig defaults
+      local lspconfig = require("lspconfig")
+
       -- Setup Mason
       require("mason").setup({
         ui = {
@@ -50,6 +53,7 @@ return {
           -- Diagnostics
           map("n", "<leader>ld", telescope("diagnostics", { bufnr = 0 }), "LSP: Document Diagnostics")
           map("n", "<leader>lD", telescope("diagnostics"), "LSP: Project Diagnostics")
+          map("n", "<leader>cd", vim.diagnostic.open_float, "Line Diagnostics (Float)")
           map("n", "[d", vim.diagnostic.goto_prev, "Previous Diagnostic")
           map("n", "]d", vim.diagnostic.goto_next, "Next Diagnostic")
 
@@ -95,7 +99,6 @@ return {
 
       -- List of language servers to install
       local servers = {
-        "gopls",        -- Go
         "ts_ls",        -- JavaScript, TypeScript, React JSX/TSX
         "tailwindcss",  -- Tailwind CSS
         "pyright",      -- Python
@@ -103,13 +106,18 @@ return {
         "cssls",        -- CSS
       }
 
+      -- Only include gopls if go is installed on system to avoid errors
+      if vim.fn.executable("go") == 1 then
+        table.insert(servers, "gopls")
+      end
+
       -- Setup mason-lspconfig with automatic installation
       require("mason-lspconfig").setup({
         ensure_installed = servers,
         automatic_installation = true,
       })
 
-      -- Native Neovim 0.12 LSP configuration (no deprecated wrappers)
+      -- Configure global capabilities
       vim.lsp.config("*", {
         capabilities = capabilities,
       })
@@ -128,11 +136,9 @@ return {
       -- Enable all configured language servers
       vim.lsp.enable(servers)
 
-      -- Clean rounded borders for floating windows & diagnostics
+      -- Distraction-free diagnostics: no noisy inline virtual text
       vim.diagnostic.config({
-        virtual_text = {
-          prefix = "●",
-        },
+        virtual_text = false,
         signs = true,
         underline = true,
         update_in_insert = false,
