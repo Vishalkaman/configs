@@ -104,41 +104,10 @@ return {
         "cssls",        -- CSS
       }
 
-      -- Faster TypeScript/JavaScript language server: tsgo (Microsoft Go-based TS compiler)
-      if vim.fn.executable("tsgo") == 1 then
-        lspconfig.tsgo = {
-          default_config = {
-            cmd = { "tsgo", "--lsp", "--stdio" },
-            filetypes = {
-              "javascript",
-              "javascriptreact",
-              "javascript.jsx",
-              "typescript",
-              "typescriptreact",
-              "typescript.tsx",
-            },
-            root_dir = lspconfig.util.root_pattern("tsconfig.json", "package.json", "jsconfig.json", ".git"),
-          },
-        }
-        vim.lsp.config("tsgo", {
-          cmd = { "tsgo", "--lsp", "--stdio" },
-          filetypes = {
-            "javascript",
-            "javascriptreact",
-            "javascript.jsx",
-            "typescript",
-            "typescriptreact",
-            "typescript.tsx",
-          },
-          root_markers = { "tsconfig.json", "package.json", "jsconfig.json", ".git" },
-          capabilities = capabilities,
-        })
-        table.insert(servers, "tsgo")
-      else
-        table.insert(servers, "ts_ls")
-      end
+      -- High-performance native TypeScript/JavaScript LSP: tsc (TypeScript 7+ Go-based native compiler)
+      table.insert(servers, "tsc")
 
-      -- Faster Python language server: ty (Astral's Rust-based Python type checker & LSP)
+      -- High-performance Python LSP: ty (Astral's Rust-based type checker & LSP)
       if vim.fn.executable("ty") == 1 then
         lspconfig.ty = {
           default_config = {
@@ -180,8 +149,8 @@ return {
       -- Setup mason-lspconfig with automatic installation
       require("mason-lspconfig").setup({
         ensure_installed = vim.tbl_filter(function(server)
-          -- tsgo and ty are managed externally (native / cargo / uv)
-          return server ~= "tsgo" and server ~= "ty"
+          -- tsc (native TS) and ty (Rust Python) are managed externally
+          return server ~= "tsc" and server ~= "tsgo" and server ~= "ty"
         end, servers),
         automatic_installation = true,
       })
@@ -191,29 +160,11 @@ return {
         capabilities = capabilities,
       })
 
-      if vim.fn.executable("tsgo") ~= 1 then
-        vim.lsp.config("ts_ls", {
-          filetypes = {
-            "javascript",
-            "javascriptreact",
-            "javascript.jsx",
-            "typescript",
-            "typescriptreact",
-            "typescript.tsx",
-          },
-        })
-      end
-
       -- Enable configured high-performance language servers
       vim.lsp.enable(servers)
 
-      -- Ensure older/slower duplicate servers do not attach
-      if vim.fn.executable("tsgo") == 1 then
-        vim.lsp.disable({ "ts_ls" })
-      end
-      if vim.fn.executable("ty") == 1 then
-        vim.lsp.disable({ "pyright", "basedpyright" })
-      end
+      -- Disable slower default servers to prevent duplicate attachments
+      vim.lsp.enable({ "ts_ls", "pyright" }, false)
 
       -- Distraction-free diagnostics: no noisy inline virtual text
       vim.diagnostic.config({
