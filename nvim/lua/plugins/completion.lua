@@ -28,6 +28,9 @@ return {
           ["<C-e>"] = cmp.mapping.abort(),
           ["<CR>"] = cmp.mapping.confirm({ select = false }),
           ["<C-y>"] = cmp.mapping.confirm({ select = true }),
+          ["<C-i>"] = cmp.mapping.confirm({ select = true }),
+          ["<Tab>"] = cmp.config.disable,
+          ["<S-Tab>"] = cmp.config.disable,
         }),
         sources = cmp.config.sources({
           { name = "nvim_lsp" },
