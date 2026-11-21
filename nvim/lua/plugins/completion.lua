@@ -14,6 +14,9 @@ return {
       local luasnip = require("luasnip")
 
       return {
+        performance = {
+          max_view_entries = 10,
+        },
         snippet = {
           expand = function(args)
             luasnip.lsp_expand(args.body)
@@ -26,11 +29,29 @@ return {
           ["<C-f>"] = cmp.mapping.scroll_docs(4),
           ["<C-Space>"] = cmp.mapping.complete(),
           ["<C-e>"] = cmp.mapping.abort(),
-          ["<CR>"] = cmp.mapping.confirm({ select = false }),
-          ["<C-y>"] = cmp.mapping.confirm({ select = true }),
-          ["<C-i>"] = cmp.mapping.confirm({ select = true }),
-          ["<Tab>"] = cmp.config.disable,
-          ["<S-Tab>"] = cmp.config.disable,
+          -- Enter never confirms completion, it only inserts newline
+          ["<CR>"] = cmp.mapping(function(fallback)
+            fallback()
+          end),
+          -- Ctrl-i selects first suggestion and confirms
+          ["<C-i>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.confirm({ select = true })
+            else
+              fallback()
+            end
+          end, { "i", "s" }),
+          -- If terminal passes Ctrl-i as Tab, confirm completion instead of inserting tab
+          ["<Tab>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.confirm({ select = true })
+            else
+              fallback()
+            end
+          end, { "i", "s" }),
+          ["<S-Tab>"] = cmp.mapping(function(fallback)
+            fallback()
+          end, { "i", "s" }),
         }),
         sources = cmp.config.sources({
           { name = "nvim_lsp" },

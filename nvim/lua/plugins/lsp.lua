@@ -102,7 +102,14 @@ return {
         "tailwindcss",  -- Tailwind CSS
         "html",         -- HTML
         "cssls",        -- CSS
+        "biome",        -- Fast Rust-based linter & formatter (JS, TS, JSX, TSX, JSON, CSS)
       }
+
+      -- Biome setup (detects biome.json, package.json, or git root)
+      lspconfig.biome.setup({
+        root_dir = lspconfig.util.root_pattern("biome.json", "biome.jsonc", "package.json", ".git"),
+        capabilities = capabilities,
+      })
 
       -- High-performance native TypeScript/JavaScript LSP: tsc (TypeScript 7+ Go-based native compiler)
       table.insert(servers, "tsc")
