@@ -204,8 +204,16 @@ return {
         })
       end
 
-      -- Enable all configured language servers
+      -- Enable configured high-performance language servers
       vim.lsp.enable(servers)
+
+      -- Ensure older/slower duplicate servers do not attach
+      if vim.fn.executable("tsgo") == 1 then
+        vim.lsp.disable({ "ts_ls" })
+      end
+      if vim.fn.executable("ty") == 1 then
+        vim.lsp.disable({ "pyright", "basedpyright" })
+      end
 
       -- Distraction-free diagnostics: no noisy inline virtual text
       vim.diagnostic.config({
