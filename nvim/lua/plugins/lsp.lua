@@ -106,8 +106,8 @@ return {
       }
 
       -- Biome setup (detects biome.json, package.json, or git root)
-      lspconfig.biome.setup({
-        root_dir = lspconfig.util.root_pattern("biome.json", "biome.jsonc", "package.json", ".git"),
+      vim.lsp.config("biome", {
+        root_markers = { "biome.json", "biome.jsonc", "package.json", ".git" },
         capabilities = capabilities,
       })
 
